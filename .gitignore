@@ -1,0 +1,16 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (contiene contraseñas — nunca subir)
+.env
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/

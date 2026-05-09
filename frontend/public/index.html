@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d2137">
+  <title>PulsTag — Sistema de Identificación Médica</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d2137;
+      min-height: 100vh;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 24px 32px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-text { font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; color: #64b5f6; }
+
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .nfc-icon {
+      font-size: 5rem;
+      margin-bottom: 28px;
+      animation: pulse 2.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.85; }
+    }
+    h1 {
+      font-size: clamp(1.6rem, 5vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 18px;
+      color: #e3f2fd;
+    }
+    h1 span { color: #64b5f6; }
+    p.tagline {
+      font-size: 1.05rem;
+      color: #90a4ae;
+      max-width: 480px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 680px;
+      width: 100%;
+      margin-bottom: 48px;
+    }
+    .feature {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 22px 18px;
+      text-align: left;
+    }
+    .feature .f-icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .feature h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: #e3f2fd; }
+    .feature p { font-size: 0.82rem; color: #78909c; line-height: 1.5; }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1565c0;
+      color: white;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .cta:hover { background: #1976d2; transform: translateY(-2px); }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #455a64;
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-text">PulsTag</div>
+  </header>
+
+  <main class="hero">
+    <div class="nfc-icon">📡</div>
+    <h1>Información médica instantánea<br><span>con solo acercar tu bracelet</span></h1>
+    <p class="tagline">
+      PulsTag almacena los datos críticos de cada paciente de forma segura y los hace accesibles al instante con una pulsera NFC. En emergencias, cada segundo cuenta.
+    </p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="f-icon">⚡</div>
+        <h3>Acceso instantáneo</h3>
+        <p>El personal médico ve los datos del paciente en segundos, sin necesidad de app.</p>
+      </div>
+      <div class="feature">
+        <div class="f-icon">🩸</div>
+        <h3>Datos críticos visibles</h3>
+        <p>Tipo de sangre, alergias y medicamentos destacados para emergencias.</p>
+      </div>
+      <div class="feature">
+        <div class="f-icon">🔒</div>
+        <h3>Panel seguro</h3>
+        <p>Gestión de pacientes protegida con autenticación JWT de nivel hospitalario.</p>
+      </div>
+    </div>
+
+    <a href="/admin" class="cta">Panel de Administración →</a>
+  </main>
+
+  <footer>
+    &copy; 2024 PulsTag &mdash; Sistema de Identificación de Pacientes por NFC
+  </footer>
+</body>
+</html>

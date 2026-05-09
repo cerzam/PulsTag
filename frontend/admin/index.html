@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulsTag — Panel de Administración</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #1565c0;
+      --primary-light: #1976d2;
+      --primary-dark: #0d2137;
+      --danger: #d32f2f;
+      --danger-light: #ef5350;
+      --success: #2e7d32;
+      --warning: #e65100;
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --border: #e0e7ef;
+      --text: #1a2332;
+      --text-muted: #607d8b;
+      --shadow: 0 2px 12px rgba(0,0,0,0.09);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ─────────────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0d2137 0%, #1565c0 100%);
+      padding: 24px;
+    }
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      padding: 44px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .login-logo { text-align: center; margin-bottom: 32px; }
+    .login-logo .brand { font-size: 2rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; }
+    .login-logo .brand-sub { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+    .login-card h2 { font-size: 1.25rem; color: var(--text); margin-bottom: 24px; font-weight: 700; }
+
+    /* ── FORM ELEMENTS ─────────────────────────── */
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.8px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: white;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(21,101,192,0.12);
+    }
+    textarea { resize: vertical; min-height: 72px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-light); box-shadow: 0 4px 12px rgba(21,101,192,0.35); }
+    .btn-full { width: 100%; padding: 13px; font-size: 1rem; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: var(--danger-light); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 7px; }
+
+    .alert-error {
+      background: #fdecea;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .alert-error.show { display: block; }
+
+    /* ── DASHBOARD ─────────────────────────────── */
+    #dashboard { display: none; }
+
+    .topbar {
+      background: var(--primary-dark);
+      color: white;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    .topbar-brand { font-size: 1.2rem; font-weight: 800; color: #64b5f6; letter-spacing: 1px; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-user { font-size: 0.82rem; color: #90a4ae; }
+    .btn-logout { background: rgba(255,255,255,0.1); color: #cfd8dc; border: 1px solid rgba(255,255,255,0.15); padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 0.82rem; transition: background 0.15s; }
+    .btn-logout:hover { background: rgba(255,255,255,0.18); }
+
+    .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .page-header h1 { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+    .page-header p { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── SEARCH ────────────────────────────────── */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .search-bar input { max-width: 340px; }
+
+    /* ── PATIENT TABLE ─────────────────────────── */
+    .table-card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 640px; }
+    thead { background: #f8fafc; }
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      border-bottom: 1.5px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: var(--text); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    .td-name { font-weight: 600; color: var(--primary-dark); }
+    .td-muted { color: var(--text-muted); font-size: 0.82rem; }
+
+    .badge-blood {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: 0.3px;
+    }
+    .allergy-badge {
+      display: inline-block;
+      background: #fdecea;
+      color: #c62828;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    .no-allergy { color: #a5d6a7; font-size: 0.8rem; }
+
+    .actions { display: flex; gap: 7px; }
+
+    .empty-state {
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .empty-state .e-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.9rem; }
+
+    .loading-row td { text-align: center; padding: 40px; color: var(--text-muted); }
+
+    /* ── MODAL ─────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(13,33,55,0.6);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: white;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+      transform: translateY(16px);
+      transition: transform 0.22s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-header {
+      padding: 22px 26px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-header h2 { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+    .btn-close { background: none; border: none; cursor: pointer; font-size: 1.3rem; color: var(--text-muted); line-height: 1; padding: 2px; border-radius: 6px; }
+    .btn-close:hover { background: var(--bg); }
+
+    .modal-body { padding: 22px 26px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 16px 26px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* ── NFC URL MODAL ─────────────────────────── */
+    #nfc-modal .modal { max-width: 480px; }
+    .nfc-url-box {
+      background: #f0f4ff;
+      border: 2px dashed #7986cb;
+      border-radius: 12px;
+      padding: 18px;
+      margin: 16px 0;
+      word-break: break-all;
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+      color: #283593;
+      line-height: 1.5;
+    }
+    .nfc-success-icon { font-size: 2.5rem; text-align: center; margin-bottom: 12px; }
+    .nfc-steps { list-style: none; counter-reset: steps; margin: 16px 0; }
+    .nfc-steps li {
+      counter-increment: steps;
+      padding: 8px 0 8px 36px;
+      position: relative;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .nfc-steps li:last-child { border-bottom: none; }
+    .nfc-steps li::before {
+      content: counter(steps);
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 22px;
+      height: 22px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 22px;
+      text-align: center;
+    }
+    .copy-feedback { font-size: 0.78rem; color: var(--success); margin-left: 8px; opacity: 0; transition: opacity 0.3s; }
+    .copy-feedback.show { opacity: 1; }
+
+    /* ── CONFIRM DELETE ────────────────────────── */
+    #confirm-modal .modal { max-width: 400px; }
+    .confirm-body { padding: 28px 26px; text-align: center; }
+    .confirm-body .c-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .confirm-body h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .confirm-body p { font-size: 0.88rem; color: var(--text-muted); }
+
+    /* ── RESPONSIVE ────────────────────────────── */
+    @media (max-width: 600px) {
+      .login-card { padding: 32px 24px; }
+      .main-content { padding: 18px 14px; }
+      .modal-header, .modal-body, .modal-footer { padding-left: 18px; padding-right: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN SCREEN ═══════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="brand">PulsTag</div>
+      <div class="brand-sub">Panel de Administración</div>
+    </div>
+    <h2>Iniciar sesión</h2>
+    <div class="alert-error" id="login-error"></div>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="username">Usuario</label>
+        <input type="text" id="username" name="username" placeholder="admin" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="login-btn">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════ DASHBOARD ═══════════════════ -->
+<div id="dashboard">
+  <nav class="topbar">
+    <div class="topbar-brand">PulsTag</div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="topbar-username"></span>
+      <button class="btn-logout" id="logout-btn">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1>Gestión de Pacientes</h1>
+        <p id="patient-count-label">Cargando...</p>
+      </div>
+      <button class="btn btn-primary" id="btn-new-patient">+ Nuevo Paciente</button>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Buscar por nombre, diagnóstico…">
+    </div>
+
+    <div class="table-card">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Paciente</th>
+              <th>Edad</th>
+              <th>Tipo de Sangre</th>
+              <th>Alergias</th>
+              <th>Diagnóstico</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="patients-tbody">
+            <tr class="loading-row"><td colspan="6">Cargando pacientes…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PATIENT FORM MODAL ══════════ -->
+<div class="modal-overlay" id="patient-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-header">
+      <h2 id="modal-title">Nuevo Paciente</h2>
+      <button class="btn-close" id="modal-close" title="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert-error" id="modal-error"></div>
+      <form id="patient-form">
+        <input type="hidden" id="patient-id">
+        <div class="form-group">
+          <label for="f-nombre">Nombre completo *</label>
+          <input type="text" id="f-nombre" placeholder="Nombre del paciente" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-edad">Edad</label>
+            <input type="number" id="f-edad" placeholder="Años" min="0" max="130">
+          </div>
+          <div class="form-group">
+            <label for="f-tipo-sangre">Tipo de Sangre</label>
+            <select id="f-tipo-sangre">
+              <option value="">— Seleccionar —</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="f-diagnostico">Diagnóstico</label>
+          <textarea id="f-diagnostico" placeholder="Diagnóstico principal y secundarios…"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="f-medicamentos">Medicamentos</label>
+          <textarea id="f-medicamentos" placeholder="Medicamentos, dosis y frecuencia…"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="f-alergias">Alergias</label>
+          <textarea id="f-alergias" placeholder="Alergias conocidas y tipo de reacción…" style="min-height:60px"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="f-contacto">Contacto de Emergencia</label>
+          <input type="text" id="f-contacto" placeholder="Nombre (relación) — Teléfono">
+        </div>
+        <div class="form-group">
+          <label for="f-foto">URL de Fotografía <span style="color:var(--text-muted);font-weight:400">(opcional)</span></label>
+          <input type="url" id="f-foto" placeholder="https://…">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="modal-save">Guardar Paciente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ NFC URL MODAL ════════════════ -->
+<div class="modal-overlay" id="nfc-modal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h2>URL del tag NFC</h2>
+      <button class="btn-close" id="nfc-modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="nfc-success-icon">✅</div>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:4px">URL para programar en el tag NFC:</p>
+      <div class="nfc-url-box" id="nfc-url-text"></div>
+      <button class="btn btn-primary" id="btn-copy-url">Copiar URL</button>
+      <span class="copy-feedback" id="copy-feedback">¡Copiado!</span>
+
+      <ul class="nfc-steps">
+        <li>Copia la URL generada arriba.</li>
+        <li>Usa una app NFC (NFC Tools, TagWriter) para escribir la URL en el tag.</li>
+        <li>Coloca el tag en la pulsera del paciente.</li>
+        <li>Al escanear la pulsera, el teléfono abrirá automáticamente los datos del paciente.</li>
+      </ul>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="nfc-modal-done">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM DELETE MODAL ════════ -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="confirm-body">
+      <div class="c-icon">🗑️</div>
+      <h3>¿Eliminar paciente?</h3>
+      <p id="confirm-patient-name" style="margin-top:6px;font-weight:600;color:var(--text)"></p>
+      <p style="margin-top:8px">Esta acción no se puede deshacer. El registro y el enlace NFC dejarán de funcionar.</p>
+    </div>
+    <div class="modal-footer" style="justify-content:center;gap:14px">
+      <button class="btn btn-ghost" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-delete">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  const BLOOD_COLORS = {
+    'A+':'#1565c0','A-':'#0d47a1','B+':'#2e7d32','B-':'#1b5e20',
+    'AB+':'#6a1b9a','AB-':'#4a148c','O+':'#c62828','O-':'#b71c1c'
+  };
+
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function truncate(s, n = 50) {
+    if (!s) return '';
+    return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+
+  function token() { return localStorage.getItem('pulstag_token'); }
+
+  async function apiFetch(url, opts = {}) {
+    const headers = { 'Content-Type': 'application/json', ...opts.headers };
+    if (token()) headers['Authorization'] = 'Bearer ' + token();
+    const res = await fetch(url, { ...opts, headers });
+    if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+    return res;
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  // ── State ──────────────────────────────────────────────────────────────────
+
+  let allPatients = [];
+  let deleteTargetId = null;
+
+  // ── Login ──────────────────────────────────────────────────────────────────
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('login-error');
+    const btn   = document.getElementById('login-btn');
+    errEl.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Verificando…';
+
+    try {
+      const res  = await fetch('/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('username').value.trim(),
+          password: document.getElementById('password').value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error de autenticación');
+      localStorage.setItem('pulstag_token', data.token);
+      showDashboard();
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+    }
+  });
+
+  function showDashboard() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+
+    // Decode username from JWT payload
+    try {
+      const payload = JSON.parse(atob(token().split('.')[1]));
+      document.getElementById('topbar-username').textContent = payload.username;
+    } catch {}
+
+    loadPatients();
+  }
+
+  function logout() {
+    localStorage.removeItem('pulstag_token');
+    location.reload();
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', logout);
+
+  // ── Load patients ──────────────────────────────────────────────────────────
+
+  async function loadPatients() {
+    try {
+      const res = await apiFetch('/admin/patients');
+      allPatients = await res.json();
+      renderPatients(allPatients);
+    } catch (err) {
+      if (err.message !== 'Unauthorized') console.error(err);
+    }
+  }
+
+  function renderPatients(patients) {
+    const label = document.getElementById('patient-count-label');
+    const tbody = document.getElementById('patients-tbody');
+
+    label.textContent = patients.length === 1
+      ? '1 paciente registrado'
+      : `${patients.length} pacientes registrados`;
+
+    if (patients.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6">
+        <div class="empty-state"><div class="e-icon">👤</div><p>No hay pacientes registrados aún.</p></div>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = patients.map(p => {
+      const btColor  = BLOOD_COLORS[p.tipo_sangre] || '#546e7a';
+      const btBadge  = p.tipo_sangre
+        ? `<span class="badge-blood" style="background:${btColor}">${esc(p.tipo_sangre)}</span>`
+        : '<span class="td-muted">—</span>';
+      const allergyCell = p.alergias
+        ? `<span class="allergy-badge" title="${esc(p.alergias)}">${esc(truncate(p.alergias, 30))}</span>`
+        : `<span class="no-allergy">Sin alergias</span>`;
+
+      return `<tr data-id="${p.id}">
+        <td>
+          <div class="td-name">${esc(p.nombre)}</div>
+          <div class="td-muted" style="font-size:0.75rem;margin-top:2px;font-family:monospace">${esc(p.uuid)}</div>
+        </td>
+        <td>${p.edad != null ? esc(String(p.edad)) + ' años' : '<span class="td-muted">—</span>'}</td>
+        <td>${btBadge}</td>
+        <td>${allergyCell}</td>
+        <td><span class="td-muted">${esc(truncate(p.diagnostico, 45))}</span></td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32" onclick="showNFCUrl('${p.uuid}')">📡 URL NFC</button>
+            <button class="btn btn-ghost btn-sm" onclick="openEditModal(${p.id})">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="openDeleteConfirm(${p.id}, '${esc(p.nombre)}')">Eliminar</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Search ─────────────────────────────────────────────────────────────────
+
+  document.getElementById('search-input').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    if (!q) { renderPatients(allPatients); return; }
+    renderPatients(allPatients.filter(p =>
+      (p.nombre      || '').toLowerCase().includes(q) ||
+      (p.diagnostico || '').toLowerCase().includes(q) ||
+      (p.alergias    || '').toLowerCase().includes(q) ||
+      (p.tipo_sangre || '').toLowerCase().includes(q)
+    ));
+  });
+
+  // ── Patient form modal ─────────────────────────────────────────────────────
+
+  function clearForm() {
+    document.getElementById('patient-id').value   = '';
+    document.getElementById('f-nombre').value     = '';
+    document.getElementById('f-edad').value       = '';
+    document.getElementById('f-tipo-sangre').value= '';
+    document.getElementById('f-diagnostico').value= '';
+    document.getElementById('f-medicamentos').value= '';
+    document.getElementById('f-alergias').value   = '';
+    document.getElementById('f-contacto').value   = '';
+    document.getElementById('f-foto').value       = '';
+    document.getElementById('modal-error').classList.remove('show');
+  }
+
+  function readForm() {
+    return {
+      nombre:              document.getElementById('f-nombre').value.trim(),
+      edad:                document.getElementById('f-edad').value || null,
+      tipo_sangre:         document.getElementById('f-tipo-sangre').value || null,
+      diagnostico:         document.getElementById('f-diagnostico').value.trim() || null,
+      medicamentos:        document.getElementById('f-medicamentos').value.trim() || null,
+      alergias:            document.getElementById('f-alergias').value.trim() || null,
+      contacto_emergencia: document.getElementById('f-contacto').value.trim() || null,
+      foto_url:            document.getElementById('f-foto').value.trim() || null,
+    };
+  }
+
+  document.getElementById('btn-new-patient').addEventListener('click', () => {
+    clearForm();
+    document.getElementById('modal-title').textContent = 'Nuevo Paciente';
+    document.getElementById('modal-save').textContent  = 'Guardar Paciente';
+    openModal('patient-modal');
+    document.getElementById('f-nombre').focus();
+  });
+
+  function openEditModal(id) {
+    const p = allPatients.find(x => x.id === id);
+    if (!p) return;
+    clearForm();
+    document.getElementById('patient-id').value        = p.id;
+    document.getElementById('f-nombre').value          = p.nombre    || '';
+    document.getElementById('f-edad').value            = p.edad      != null ? p.edad : '';
+    document.getElementById('f-tipo-sangre').value     = p.tipo_sangre || '';
+    document.getElementById('f-diagnostico').value     = p.diagnostico || '';
+    document.getElementById('f-medicamentos').value    = p.medicamentos || '';
+    document.getElementById('f-alergias').value        = p.alergias   || '';
+    document.getElementById('f-contacto').value        = p.contacto_emergencia || '';
+    document.getElementById('f-foto').value            = p.foto_url   || '';
+    document.getElementById('modal-title').textContent = 'Editar Paciente';
+    document.getElementById('modal-save').textContent  = 'Actualizar';
+    openModal('patient-modal');
+    document.getElementById('f-nombre').focus();
+  }
+
+  [document.getElementById('modal-close'), document.getElementById('modal-cancel')].forEach(el => {
+    el.addEventListener('click', () => closeModal('patient-modal'));
+  });
+
+  document.getElementById('patient-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal('patient-modal');
+  });
+
+  document.getElementById('modal-save').addEventListener('click', async () => {
+    const errEl = document.getElementById('modal-error');
+    const data  = readForm();
+    if (!data.nombre) {
+      errEl.textContent = 'El nombre del paciente es obligatorio.';
+      errEl.classList.add('show');
+      document.getElementById('f-nombre').focus();
+      return;
+    }
+    errEl.classList.remove('show');
+
+    const saveBtn = document.getElementById('modal-save');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Guardando…';
+
+    try {
+      const id = document.getElementById('patient-id').value;
+      let res;
+      if (id) {
+        res = await apiFetch(`/admin/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+      } else {
+        res = await apiFetch('/admin/patients', { method: 'POST', body: JSON.stringify(data) });
+      }
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Error al guardar');
+
+      closeModal('patient-modal');
+      await loadPatients();
+
+      if (!id) showNFCUrl(result.uuid);
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.add('show');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = document.getElementById('patient-id').value ? 'Actualizar' : 'Guardar Paciente';
+    }
+  });
+
+  // ── NFC URL modal ──────────────────────────────────────────────────────────
+
+  function showNFCUrl(uuid) {
+    document.getElementById('nfc-url-text').textContent = `${window.location.origin}/p/${uuid}`;
+    openModal('nfc-modal');
+  }
+
+  document.getElementById('btn-copy-url').addEventListener('click', async () => {
+    const url = document.getElementById('nfc-url-text').textContent;
+    await navigator.clipboard.writeText(url).catch(() => {
+      // Fallback for browsers without clipboard API
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    });
+    const fb = document.getElementById('copy-feedback');
+    fb.classList.add('show');
+    setTimeout(() => fb.classList.remove('show'), 2000);
+  });
+
+  [document.getElementById('nfc-modal-close'), document.getElementById('nfc-modal-done')].forEach(el => {
+    el.addEventListener('click', () => closeModal('nfc-modal'));
+  });
+
+  // ── Delete confirm modal ───────────────────────────────────────────────────
+
+  function openDeleteConfirm(id, nombre) {
+    deleteTargetId = id;
+    document.getElementById('confirm-patient-name').textContent = nombre;
+    openModal('confirm-modal');
+  }
+
+  document.getElementById('confirm-cancel').addEventListener('click', () => {
+    deleteTargetId = null;
+    closeModal('confirm-modal');
+  });
+
+  document.getElementById('confirm-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) { deleteTargetId = null; closeModal('confirm-modal'); }
+  });
+
+  document.getElementById('confirm-delete').addEventListener('click', async () => {
+    if (!deleteTargetId) return;
+    const btn = document.getElementById('confirm-delete');
+    btn.disabled = true;
+    btn.textContent = 'Eliminando…';
+    try {
+      const res = await apiFetch(`/admin/patients/${deleteTargetId}`, { method: 'DELETE' });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      closeModal('confirm-modal');
+      await loadPatients();
+    } catch (err) {
+      alert('Error al eliminar: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Sí, eliminar';
+      deleteTargetId = null;
+    }
+  });
+
+  // ── Keyboard shortcuts ─────────────────────────────────────────────────────
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeModal('patient-modal');
+      closeModal('nfc-modal');
+      closeModal('confirm-modal');
+    }
+  });
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+
+  if (token()) {
+    showDashboard();
+  }
+</script>
+</body>
+</html>
