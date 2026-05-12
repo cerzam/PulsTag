@@ -10,7 +10,7 @@ router.get('/:uuid', async (req, res) => {
     return res.status(404).send(renderNotFound());
   }
   try {
-    const [rows] = await pool.query('SELECT * FROM patients WHERE uuid = ?', [uuid]);
+    const { rows } = await pool.query('SELECT * FROM patients WHERE uuid = $1', [uuid]);
     if (rows.length === 0) {
       return res.status(404).send(renderNotFound());
     }

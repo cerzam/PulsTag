@@ -82,55 +82,48 @@ const SEED_PATIENTS = [
 ];
 
 async function initDB() {
-  const conn = await pool.getConnection();
-  try {
-    await conn.query(`
-      CREATE TABLE IF NOT EXISTS patients (
-        id                  INT AUTO_INCREMENT PRIMARY KEY,
-        uuid                VARCHAR(36) NOT NULL UNIQUE,
-        nombre              VARCHAR(100),
-        edad                INT,
-        diagnostico         TEXT,
-        medicamentos        TEXT,
-        alergias            TEXT,
-        tipo_sangre         VARCHAR(5),
-        contacto_emergencia   TEXT,
-        contacto_emergencia_2 TEXT,
-        foto_url              TEXT,
-        created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS patients (
+      id                    SERIAL PRIMARY KEY,
+      uuid                  VARCHAR(36) NOT NULL UNIQUE,
+      nombre                VARCHAR(100),
+      edad                  INT,
+      diagnostico           TEXT,
+      medicamentos          TEXT,
+      alergias              TEXT,
+      tipo_sangre           VARCHAR(5),
+      contacto_emergencia   TEXT,
+      contacto_emergencia_2 TEXT,
+      foto_url              TEXT,
+      created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
 
-    await conn.query(`
-      CREATE TABLE IF NOT EXISTS admins (
-        id            INT AUTO_INCREMENT PRIMARY KEY,
-        username      VARCHAR(50) NOT NULL UNIQUE,
-        password_hash TEXT
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS admins (
+      id            SERIAL PRIMARY KEY,
+      username      VARCHAR(50) NOT NULL UNIQUE,
+      password_hash TEXT
+    );
+  `);
 
-    // Seed admin (username: admin / password: admin123)
-    const [[{ count: adminCount }]] = await conn.query('SELECT COUNT(*) as count FROM admins');
-    if (adminCount === 0) {
-      const hash = await bcrypt.hash('admin123', 12);
-      await conn.query('INSERT INTO admins (username, password_hash) VALUES (?, ?)', ['admin', hash]);
-      console.log('Admin creado  →  usuario: admin  |  contraseña: admin123');
+  const { rows: [{ count: adminCount }] } = await pool.query('SELECT COUNT(*) as count FROM admins');
+  if (parseInt(adminCount) === 0) {
+    const hash = await bcrypt.hash('admin123', 12);
+    await pool.query('INSERT INTO admins (username, password_hash) VALUES ($1, $2)', ['admin', hash]);
+    console.log('Admin creado  →  usuario: admin  |  contraseña: admin123');
+  }
+
+  const { rows: [{ count: patientCount }] } = await pool.query('SELECT COUNT(*) as count FROM patients');
+  if (parseInt(patientCount) === 0) {
+    for (const p of SEED_PATIENTS) {
+      await pool.query(
+        `INSERT INTO patients (uuid, nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, contacto_emergencia_2, foto_url)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [randomUUID(), p.nombre, p.edad, p.diagnostico, p.medicamentos, p.alergias, p.tipo_sangre, p.contacto_emergencia, p.contacto_emergencia_2 || null, null]
+      );
     }
-
-    // Seed patients
-    const [[{ count: patientCount }]] = await conn.query('SELECT COUNT(*) as count FROM patients');
-    if (patientCount === 0) {
-      for (const p of SEED_PATIENTS) {
-        await conn.query(
-          `INSERT INTO patients (uuid, nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, contacto_emergencia_2, foto_url)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [randomUUID(), p.nombre, p.edad, p.diagnostico, p.medicamentos, p.alergias, p.tipo_sangre, p.contacto_emergencia, p.contacto_emergencia_2 || null, null]
-        );
-      }
-      console.log(`${SEED_PATIENTS.length} pacientes de ejemplo insertados.`);
-    }
-  } finally {
-    conn.release();
+    console.log(`${SEED_PATIENTS.length} pacientes insertados.`);
   }
 }
 

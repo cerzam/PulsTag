@@ -13,7 +13,7 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
   }
   try {
-    const [rows] = await pool.query('SELECT * FROM admins WHERE username = ?', [username]);
+    const { rows } = await pool.query('SELECT * FROM admins WHERE username = $1', [username]);
     if (rows.length === 0) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
@@ -36,7 +36,7 @@ router.post('/login', async (req, res) => {
 // GET /admin/patients
 router.get('/patients', auth, async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM patients ORDER BY created_at DESC');
+    const { rows } = await pool.query('SELECT * FROM patients ORDER BY created_at DESC');
     res.json(rows);
   } catch (err) {
     console.error('List patients error:', err);
@@ -52,12 +52,11 @@ router.post('/patients', auth, async (req, res) => {
   }
   try {
     const uuid = randomUUID();
-    const [result] = await pool.query(
+    const { rows } = await pool.query(
       `INSERT INTO patients (uuid, nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, contacto_emergencia_2, foto_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
       [uuid, nombre, edad || null, diagnostico || null, medicamentos || null, alergias || null, tipo_sangre || null, contacto_emergencia || null, contacto_emergencia_2 || null, foto_url || null]
     );
-    const [rows] = await pool.query('SELECT * FROM patients WHERE id = ?', [result.insertId]);
     res.status(201).json(rows[0]);
   } catch (err) {
     console.error('Create patient error:', err);
@@ -73,17 +72,16 @@ router.put('/patients/:id', auth, async (req, res) => {
     return res.status(400).json({ error: 'El nombre del paciente es requerido' });
   }
   try {
-    const [result] = await pool.query(
+    const result = await pool.query(
       `UPDATE patients
-       SET nombre=?, edad=?, diagnostico=?, medicamentos=?, alergias=?, tipo_sangre=?, contacto_emergencia=?, contacto_emergencia_2=?, foto_url=?
-       WHERE id=?`,
+       SET nombre=$1, edad=$2, diagnostico=$3, medicamentos=$4, alergias=$5, tipo_sangre=$6, contacto_emergencia=$7, contacto_emergencia_2=$8, foto_url=$9
+       WHERE id=$10 RETURNING *`,
       [nombre, edad || null, diagnostico || null, medicamentos || null, alergias || null, tipo_sangre || null, contacto_emergencia || null, contacto_emergencia_2 || null, foto_url || null, id]
     );
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Paciente no encontrado' });
     }
-    const [rows] = await pool.query('SELECT * FROM patients WHERE id = ?', [id]);
-    res.json(rows[0]);
+    res.json(result.rows[0]);
   } catch (err) {
     console.error('Update patient error:', err);
     res.status(500).json({ error: 'Error al actualizar paciente' });
@@ -94,8 +92,8 @@ router.put('/patients/:id', auth, async (req, res) => {
 router.delete('/patients/:id', auth, async (req, res) => {
   const { id } = req.params;
   try {
-    const [result] = await pool.query('DELETE FROM patients WHERE id = ?', [id]);
-    if (result.affectedRows === 0) {
+    const result = await pool.query('DELETE FROM patients WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Paciente no encontrado' });
     }
     res.json({ message: 'Paciente eliminado correctamente' });
