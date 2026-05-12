@@ -30,49 +30,54 @@ app.use('/admin', adminRoutes);
 
 const SEED_PATIENTS = [
   {
-    nombre: 'Carlos Mendoza Ruiz',
-    edad: 45,
-    diagnostico: 'Diabetes mellitus tipo 2, Hipertensión arterial controlada',
-    medicamentos: 'Metformina 500mg (2 veces al día), Losartán 50mg (1 vez al día), Atorvastatina 20mg (noche)',
-    alergias: 'Penicilina (reacción anafiláctica), Sulfonamidas',
-    tipo_sangre: 'A+',
-    contacto_emergencia: 'Rosa Mendoza (esposa) — +52 555-012-3456',
-  },
-  {
-    nombre: 'María Elena López Vega',
-    edad: 62,
-    diagnostico: 'Insuficiencia cardíaca congestiva, Fibrilación auricular',
-    medicamentos: 'Furosemida 40mg, Digoxina 0.25mg, Warfarina 5mg, Bisoprolol 5mg',
-    alergias: 'Ibuprofeno y AINEs (riesgo de insuficiencia renal), Contraste yodado',
-    tipo_sangre: 'O-',
-    contacto_emergencia: 'Roberto López (hijo) — +52 555-987-6543',
-  },
-  {
-    nombre: 'Juan Carlos Rodríguez Torres',
-    edad: 28,
-    diagnostico: 'Asma bronquial severa, Rinitis alérgica estacional',
-    medicamentos: 'Salbutamol inhalador (SOS), Fluticasona/Salmeterol inhalador, Montelukast 10mg',
-    alergias: 'Polen de gramíneas, Ácaros del polvo, Latex (hipersensibilidad tipo I)',
-    tipo_sangre: 'B+',
-    contacto_emergencia: 'Laura Rodríguez (madre) — +52 555-234-5678',
-  },
-  {
-    nombre: 'Ana Patricia Martínez Soto',
-    edad: 55,
-    diagnostico: 'Artritis reumatoide seropositiva, Osteoporosis severa',
-    medicamentos: 'Metotrexato 15mg (semanal), Ácido fólico 5mg, Prednisona 5mg, Calcio + Vitamina D3',
-    alergias: 'Sulfasalazina (hepatotoxicidad previa), AINEs (úlcera péptica en historial)',
-    tipo_sangre: 'AB+',
-    contacto_emergencia: 'Miguel Martínez (esposo) — +52 555-345-6789',
-  },
-  {
-    nombre: 'Pedro Antonio García Flores',
+    nombre: 'Marco Antonio Lazo Bandala',
     edad: 71,
-    diagnostico: 'EPOC estadio III (GOLD), Insuficiencia renal crónica estadio 3',
-    medicamentos: 'Tiotropio 18mcg inhalador, Budesonida/Formoterol, Amlodipino 5mg, Eritropoyetina semanal',
-    alergias: 'Latex (anafilaxia), Mariscos (urticaria generalizada), Aspirina (broncoespasmo)',
-    tipo_sangre: 'O+',
-    contacto_emergencia: 'Carmen García (hija) — +52 555-456-7890',
+    diagnostico: 'Discapacidad cognitiva: Alzheimer',
+    medicamentos: 'Donepezil, Rivastigmine, Sertraline',
+    alergias: 'Cacahuates y maní',
+    tipo_sangre: null,
+    contacto_emergencia:   'Maria Fernanda Cruz Elotlan — 2727238126',
+    contacto_emergencia_2: 'Marco Antonio Lazo Mexicano — 2712140653',
+  },
+  {
+    nombre: 'Angelica Rivera Hidalgo',
+    edad: 45,
+    diagnostico: 'Discapacidad cognitiva: Autismo y depresión',
+    medicamentos: 'Risperidone, Aripiprazole, Clonazepam, Clonidine',
+    alergias: 'Fresas, mariscos',
+    tipo_sangre: null,
+    contacto_emergencia:   'Antonia Hidalgo de la Cruz — 9535404649',
+    contacto_emergencia_2: 'Idelfonso Martínez Martínez — 9531112671',
+  },
+  {
+    nombre: 'Javier Valdivia Leyva',
+    edad: 23,
+    diagnostico: 'Discapacidad: ceguera total',
+    medicamentos: 'Timolol',
+    alergias: null,
+    tipo_sangre: null,
+    contacto_emergencia:   'Angelica Rivera Hidalgo — 9514205424',
+    contacto_emergencia_2: 'Irene Leyva Flores — 2382372001',
+  },
+  {
+    nombre: 'Alfonso Navarro Bolaños',
+    edad: 20,
+    diagnostico: 'Discapacidad: bipolaridad',
+    medicamentos: 'Lithium, Valproate, Lamotrigine',
+    alergias: 'Penicilina',
+    tipo_sangre: null,
+    contacto_emergencia:   'Carol Santos — 2382491234',
+    contacto_emergencia_2: 'Lola Martínez — 2381784578',
+  },
+  {
+    nombre: 'Zurisadai Cruz Ramos',
+    edad: 95,
+    diagnostico: 'Adulto mayor',
+    medicamentos: null,
+    alergias: 'Polvo, humo, perfumes',
+    tipo_sangre: null,
+    contacto_emergencia:   'Laura Rosalba Ramos Gálvez — 2381012409',
+    contacto_emergencia_2: 'Juan Luis Cruz Chávez — 2381037794',
   },
 ];
 
@@ -89,8 +94,9 @@ async function initDB() {
         medicamentos        TEXT,
         alergias            TEXT,
         tipo_sangre         VARCHAR(5),
-        contacto_emergencia VARCHAR(100),
-        foto_url            TEXT,
+        contacto_emergencia   TEXT,
+        contacto_emergencia_2 TEXT,
+        foto_url              TEXT,
         created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
@@ -116,9 +122,9 @@ async function initDB() {
     if (patientCount === 0) {
       for (const p of SEED_PATIENTS) {
         await conn.query(
-          `INSERT INTO patients (uuid, nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, foto_url)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [randomUUID(), p.nombre, p.edad, p.diagnostico, p.medicamentos, p.alergias, p.tipo_sangre, p.contacto_emergencia, null]
+          `INSERT INTO patients (uuid, nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, contacto_emergencia_2, foto_url)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [randomUUID(), p.nombre, p.edad, p.diagnostico, p.medicamentos, p.alergias, p.tipo_sangre, p.contacto_emergencia, p.contacto_emergencia_2 || null, null]
         );
       }
       console.log(`${SEED_PATIENTS.length} pacientes de ejemplo insertados.`);

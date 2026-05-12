@@ -444,8 +444,12 @@
           <textarea id="f-alergias" placeholder="Alergias conocidas y tipo de reacción…" style="min-height:60px"></textarea>
         </div>
         <div class="form-group">
-          <label for="f-contacto">Contacto de Emergencia</label>
-          <input type="text" id="f-contacto" placeholder="Nombre (relación) — Teléfono">
+          <label for="f-contacto">Contacto de Emergencia 1</label>
+          <input type="text" id="f-contacto" placeholder="Nombre — Teléfono">
+        </div>
+        <div class="form-group">
+          <label for="f-contacto2">Contacto de Emergencia 2</label>
+          <input type="text" id="f-contacto2" placeholder="Nombre — Teléfono">
         </div>
         <div class="form-group">
           <label for="f-foto">URL de Fotografía <span style="color:var(--text-muted);font-weight:400">(opcional)</span></label>
@@ -670,8 +674,9 @@
     document.getElementById('f-diagnostico').value= '';
     document.getElementById('f-medicamentos').value= '';
     document.getElementById('f-alergias').value   = '';
-    document.getElementById('f-contacto').value   = '';
-    document.getElementById('f-foto').value       = '';
+    document.getElementById('f-contacto').value    = '';
+    document.getElementById('f-contacto2').value   = '';
+    document.getElementById('f-foto').value        = '';
     document.getElementById('modal-error').classList.remove('show');
   }
 
@@ -683,8 +688,9 @@
       diagnostico:         document.getElementById('f-diagnostico').value.trim() || null,
       medicamentos:        document.getElementById('f-medicamentos').value.trim() || null,
       alergias:            document.getElementById('f-alergias').value.trim() || null,
-      contacto_emergencia: document.getElementById('f-contacto').value.trim() || null,
-      foto_url:            document.getElementById('f-foto').value.trim() || null,
+      contacto_emergencia:   document.getElementById('f-contacto').value.trim() || null,
+      contacto_emergencia_2: document.getElementById('f-contacto2').value.trim() || null,
+      foto_url:              document.getElementById('f-foto').value.trim() || null,
     };
   }
 
@@ -707,7 +713,8 @@
     document.getElementById('f-diagnostico').value     = p.diagnostico || '';
     document.getElementById('f-medicamentos').value    = p.medicamentos || '';
     document.getElementById('f-alergias').value        = p.alergias   || '';
-    document.getElementById('f-contacto').value        = p.contacto_emergencia || '';
+    document.getElementById('f-contacto').value         = p.contacto_emergencia || '';
+    document.getElementById('f-contacto2').value        = p.contacto_emergencia_2 || '';
     document.getElementById('f-foto').value            = p.foto_url   || '';
     document.getElementById('modal-title').textContent = 'Editar Paciente';
     document.getElementById('modal-save').textContent  = 'Actualizar';

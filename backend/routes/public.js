@@ -35,97 +35,140 @@ function bloodTypeColor(tipo) {
   return map[tipo] || '#546e7a';
 }
 
+function parseContact(str) {
+  if (!str) return { name: '', phone: '' };
+  const parts = str.split(/\s*(?:—|–|--)\s*/);
+  if (parts.length >= 2) return { name: parts[0].trim(), phone: parts[parts.length - 1].trim() };
+  const m = str.match(/(\+?[\d][\d\s\-\.\(\)]{7,})/);
+  if (m) return { name: str.replace(m[0], '').replace(/[-–—,]\s*$/, '').trim(), phone: m[0].trim() };
+  return { name: str, phone: '' };
+}
+
 function renderPatient(p) {
-  const photoSection = p.foto_url
-    ? `<img src="${esc(p.foto_url)}" alt="Foto de ${esc(p.nombre)}" class="patient-photo">`
-    : `<div class="patient-photo-placeholder"><span>${esc(p.nombre || '?').charAt(0).toUpperCase()}</span></div>`;
-
-  const alergiaSection = p.alergias
-    ? `<div class="section allergy-section">
-        <div class="section-title"><span class="icon">⚠️</span> ALERGIAS</div>
-        <p class="allergy-text">${esc(p.alergias)}</p>
-       </div>`
-    : `<div class="section allergy-section allergy-none">
-        <div class="section-title"><span class="icon">✅</span> ALERGIAS</div>
-        <p>Sin alergias conocidas</p>
-       </div>`;
-
   const btColor = bloodTypeColor(p.tipo_sangre);
+  const contact = parseContact(p.contacto_emergencia);
+  const callBtn = contact.phone
+    ? `<a href="tel:${esc(contact.phone.replace(/\s/g, ''))}" class="call-btn">📞 LLAMAR AL CUIDADOR</a>`
+    : '';
+
+  const photoEl = p.foto_url
+    ? `<img src="${esc(p.foto_url)}" alt="${esc(p.nombre)}" class="avatar">`
+    : `<div class="avatar avatar-initial">${esc(p.nombre || '?').charAt(0).toUpperCase()}</div>`;
+
+  const bloodBadge = p.tipo_sangre
+    ? `<span class="blood-badge" style="background:${btColor}">${esc(p.tipo_sangre)}</span>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <meta name="theme-color" content="#0d2137">
+  <meta name="theme-color" content="#1565c0">
   <title>PulsTag — ${esc(p.nombre)}</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #eef2f7; min-height: 100vh; padding-bottom: 32px; }
-    .top-bar { background: #0d2137; color: white; padding: 14px 20px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-    .top-bar .logo { font-size: 1.25rem; font-weight: 800; letter-spacing: 1px; color: #64b5f6; }
-    .top-bar .subtitle { font-size: 0.7rem; color: #90a4ae; text-transform: uppercase; letter-spacing: 1px; }
-    .card { max-width: 480px; margin: 24px auto 0; padding: 0 16px; }
-    .patient-header { background: white; border-radius: 16px; padding: 24px; display: flex; gap: 20px; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 12px; }
-    .patient-photo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #e3f2fd; flex-shrink: 0; }
-    .patient-photo-placeholder { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #1565c0, #42a5f5); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 3px solid #e3f2fd; }
-    .patient-photo-placeholder span { font-size: 2rem; font-weight: 700; color: white; }
-    .patient-info { flex: 1; min-width: 0; }
-    .patient-name { font-size: 1.2rem; font-weight: 700; color: #0d2137; line-height: 1.2; margin-bottom: 6px; }
-    .patient-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .badge-age { background: #e3f2fd; color: #1565c0; border-radius: 20px; padding: 3px 10px; font-size: 0.8rem; font-weight: 600; }
-    .badge-blood { border-radius: 20px; padding: 3px 12px; font-size: 0.85rem; font-weight: 800; color: white; letter-spacing: 0.5px; }
-    .section { background: white; border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
-    .section-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #607d8b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-    .section-title .icon { font-size: 1rem; }
-    .section p { font-size: 0.95rem; color: #37474f; line-height: 1.6; }
-    .allergy-section { border-left: 4px solid #f44336; background: #fff8f8; }
-    .allergy-section .section-title { color: #c62828; }
-    .allergy-text { color: #c62828 !important; font-weight: 600 !important; }
-    .allergy-none { border-left: 4px solid #4caf50; background: #f8fff8; }
-    .allergy-none .section-title { color: #2e7d32; }
-    .emergency-section { border-left: 4px solid #ff9800; background: #fffdf8; }
-    .emergency-section .section-title { color: #e65100; }
-    .emergency-section p { font-weight: 600; font-size: 1rem !important; }
-    .footer { text-align: center; margin-top: 24px; color: #90a4ae; font-size: 0.72rem; letter-spacing: 0.5px; }
-    .footer strong { color: #607d8b; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f6fb; min-height: 100vh; }
+
+    .top-bar { background: #1565c0; color: white; padding: 16px 20px 14px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .top-bar .brand { font-size: 1.15rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+    .top-bar .subtitle { font-size: 0.72rem; color: #bbdefb; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+    .profile-card { background: white; max-width: 480px; margin: 0 auto; padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid #e3eaf4; }
+    .avatar { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #1565c0; margin: 0 auto 18px; display: block; }
+    .avatar-initial { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, #1565c0, #42a5f5); display: flex; align-items: center; justify-content: center; font-size: 2.6rem; font-weight: 800; color: white; border: 4px solid #1565c0; margin: 0 auto 18px; }
+    .patient-name { font-size: 1.5rem; font-weight: 800; color: #0d2137; line-height: 1.2; }
+    .patient-age { font-size: 1rem; color: #607d8b; margin-top: 6px; }
+    .meta-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .blood-badge { border-radius: 20px; padding: 4px 14px; font-size: 0.9rem; font-weight: 800; color: white; letter-spacing: 0.5px; }
+
+    .body { max-width: 480px; margin: 0 auto; padding: 0 16px 32px; }
+
+    .section-title { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #1565c0; margin: 20px 0 10px; }
+
+    .info-list { list-style: none; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+    .info-list li { padding: 14px 18px; border-bottom: 1px solid #f0f4f8; font-size: 0.93rem; color: #37474f; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+    .info-list li:last-child { border-bottom: none; }
+    .info-list li .ico { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .info-list li.allergy-item { background: #fff8f8; }
+    .info-list li.allergy-item .lbl { color: #c62828; font-weight: 700; }
+    .lbl { font-weight: 700; color: #37474f; }
+    .val { color: #546e7a; }
+    em { color: #b0bec5; font-style: italic; }
+
+    .contact-card { background: white; border-radius: 14px; padding: 18px; margin-top: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+    .contact-row { display: flex; align-items: flex-start; gap: 12px; }
+    .contact-row .ico { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+    .contact-name { font-weight: 700; font-size: 1rem; color: #0d2137; }
+    .contact-phone { font-size: 0.9rem; color: #546e7a; margin-top: 2px; }
+    .call-btn { display: block; width: 100%; background: #1565c0; color: white; text-decoration: none; text-align: center; padding: 14px; border-radius: 10px; font-weight: 800; font-size: 0.95rem; letter-spacing: 1px; text-transform: uppercase; margin-top: 14px; transition: background 0.15s; }
+    .call-btn:active { background: #0d47a1; }
+
+    .thanks { text-align: center; margin-top: 28px; color: #78909c; font-size: 0.85rem; font-style: italic; line-height: 1.6; padding: 0 8px; }
+    .footer { text-align: center; margin-top: 20px; color: #b0bec5; font-size: 0.7rem; letter-spacing: 0.5px; }
   </style>
 </head>
 <body>
   <div class="top-bar">
-    <div>
-      <div class="logo">PulsTag</div>
-      <div class="subtitle">Identificación Médica</div>
-    </div>
+    <div class="brand">PulsTag</div>
+    <div class="subtitle">Datos del Paciente</div>
   </div>
-  <div class="card">
-    <div class="patient-header">
-      ${photoSection}
-      <div class="patient-info">
-        <div class="patient-name">${esc(p.nombre)}</div>
-        <div class="patient-meta">
-          ${p.edad != null ? `<span class="badge-age">${esc(String(p.edad))} años</span>` : ''}
-          ${p.tipo_sangre ? `<span class="badge-blood" style="background:${btColor}">${esc(p.tipo_sangre)}</span>` : ''}
+
+  <div class="profile-card">
+    ${photoEl}
+    <div class="patient-name">${esc(p.nombre)}</div>
+    ${p.edad != null ? `<div class="patient-age">Edad: ${esc(String(p.edad))} años</div>` : ''}
+    ${bloodBadge ? `<div class="meta-row">${bloodBadge}</div>` : ''}
+  </div>
+
+  <div class="body">
+    <div class="section-title">Información Médica</div>
+    <ul class="info-list">
+      <li class="${p.alergias ? 'allergy-item' : ''}">
+        <span class="ico">${p.alergias ? '💊' : '✅'}</span>
+        <span><span class="lbl">Alergias: </span><span class="val">${p.alergias ? esc(p.alergias) : 'Ninguna conocida'}</span></span>
+      </li>
+      <li>
+        <span class="ico">🏥</span>
+        <span><span class="lbl">Diagnóstico: </span><span class="val">${p.diagnostico ? esc(p.diagnostico) : '<em>No registrado</em>'}</span></span>
+      </li>
+      <li>
+        <span class="ico">💉</span>
+        <span><span class="lbl">Medicamentos: </span><span class="val">${p.medicamentos ? esc(p.medicamentos) : '<em>No registrado</em>'}</span></span>
+      </li>
+    </ul>
+
+    ${p.contacto_emergencia ? `
+    <div class="section-title">Contactos de Emergencia</div>
+    <div class="contact-card">
+      <div class="contact-row">
+        <span class="ico">👤</span>
+        <div>
+          <div class="contact-name">${esc(contact.name || p.contacto_emergencia)}</div>
+          ${contact.phone ? `<div class="contact-phone">Tel: ${esc(contact.phone)}</div>` : ''}
         </div>
       </div>
+      ${callBtn}
     </div>
-    ${alergiaSection}
-    <div class="section">
-      <div class="section-title"><span class="icon">💊</span> Medicamentos</div>
-      <p>${p.medicamentos ? esc(p.medicamentos) : '<em style="color:#b0bec5">No registrado</em>'}</p>
-    </div>
-    <div class="section">
-      <div class="section-title"><span class="icon">🏥</span> Diagnóstico</div>
-      <p>${p.diagnostico ? esc(p.diagnostico) : '<em style="color:#b0bec5">No registrado</em>'}</p>
-    </div>
-    <div class="section emergency-section">
-      <div class="section-title"><span class="icon">📞</span> Contacto de Emergencia</div>
-      <p>${p.contacto_emergencia ? esc(p.contacto_emergencia) : '<em style="color:#b0bec5">No registrado</em>'}</p>
-    </div>
-    <div class="footer">
-      <strong>PulsTag</strong> &mdash; Sistema de Identificación de Pacientes<br>
-      Esta información es confidencial y de uso médico exclusivo.
-    </div>
+    ${p.contacto_emergencia_2 ? (() => {
+      const c2 = parseContact(p.contacto_emergencia_2);
+      const callBtn2 = c2.phone
+        ? `<a href="tel:${esc(c2.phone.replace(/\s/g, ''))}" class="call-btn" style="background:#37474f">📞 LLAMAR AL 2° CONTACTO</a>`
+        : '';
+      return `<div class="contact-card" style="margin-top:10px">
+        <div class="contact-row">
+          <span class="ico">👥</span>
+          <div>
+            <div class="contact-name">${esc(c2.name || p.contacto_emergencia_2)}</div>
+            ${c2.phone ? `<div class="contact-phone">Tel: ${esc(c2.phone)}</div>` : ''}
+          </div>
+        </div>
+        ${callBtn2}
+      </div>`;
+    })() : ''}` : ''}
+
+    <p class="thanks">"Gracias por ayudar.<br>Su apoyo es importante para este paciente."</p>
+    <div class="footer">PulsTag &mdash; Sistema de Identificación de Pacientes</div>
   </div>
 </body>
 </html>`;

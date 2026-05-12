@@ -46,16 +46,16 @@ router.get('/patients', auth, async (req, res) => {
 
 // POST /admin/patients
 router.post('/patients', auth, async (req, res) => {
-  const { nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, foto_url } = req.body;
+  const { nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, contacto_emergencia_2, foto_url } = req.body;
   if (!nombre) {
     return res.status(400).json({ error: 'El nombre del paciente es requerido' });
   }
   try {
     const uuid = randomUUID();
     const [result] = await pool.query(
-      `INSERT INTO patients (uuid, nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, foto_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [uuid, nombre, edad || null, diagnostico || null, medicamentos || null, alergias || null, tipo_sangre || null, contacto_emergencia || null, foto_url || null]
+      `INSERT INTO patients (uuid, nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, contacto_emergencia_2, foto_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [uuid, nombre, edad || null, diagnostico || null, medicamentos || null, alergias || null, tipo_sangre || null, contacto_emergencia || null, contacto_emergencia_2 || null, foto_url || null]
     );
     const [rows] = await pool.query('SELECT * FROM patients WHERE id = ?', [result.insertId]);
     res.status(201).json(rows[0]);
@@ -68,16 +68,16 @@ router.post('/patients', auth, async (req, res) => {
 // PUT /admin/patients/:id
 router.put('/patients/:id', auth, async (req, res) => {
   const { id } = req.params;
-  const { nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, foto_url } = req.body;
+  const { nombre, edad, diagnostico, medicamentos, alergias, tipo_sangre, contacto_emergencia, contacto_emergencia_2, foto_url } = req.body;
   if (!nombre) {
     return res.status(400).json({ error: 'El nombre del paciente es requerido' });
   }
   try {
     const [result] = await pool.query(
       `UPDATE patients
-       SET nombre=?, edad=?, diagnostico=?, medicamentos=?, alergias=?, tipo_sangre=?, contacto_emergencia=?, foto_url=?
+       SET nombre=?, edad=?, diagnostico=?, medicamentos=?, alergias=?, tipo_sangre=?, contacto_emergencia=?, contacto_emergencia_2=?, foto_url=?
        WHERE id=?`,
-      [nombre, edad || null, diagnostico || null, medicamentos || null, alergias || null, tipo_sangre || null, contacto_emergencia || null, foto_url || null, id]
+      [nombre, edad || null, diagnostico || null, medicamentos || null, alergias || null, tipo_sangre || null, contacto_emergencia || null, contacto_emergencia_2 || null, foto_url || null, id]
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Paciente no encontrado' });
