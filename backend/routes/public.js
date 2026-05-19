@@ -65,7 +65,7 @@ function renderPatient(p) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <meta name="theme-color" content="#1565c0">
-  <title>PulsTag — ${esc(p.nombre)}</title>
+  <title>JAZMA ID — ${esc(p.nombre)}</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f6fb; min-height: 100vh; }
@@ -110,7 +110,7 @@ function renderPatient(p) {
 </head>
 <body>
   <div class="top-bar">
-    <div class="brand">PulsTag</div>
+    <div class="brand">JAZMA ID</div>
     <div class="subtitle">Datos del Paciente</div>
   </div>
 
@@ -168,20 +168,20 @@ function renderPatient(p) {
     })() : ''}` : ''}
 
     <p class="thanks">"Gracias por ayudar.<br>Su apoyo es importante para este paciente."</p>
-    <div class="footer">PulsTag &mdash; Sistema de Identificación de Pacientes</div>
+    <div class="footer">JAZMA ID &mdash; Sistema de Identificación de Pacientes</div>
   </div>
 </body>
 </html>`;
 }
 
 function renderNotFound() {
-  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PulsTag — No encontrado</title>
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JAZMA ID — No encontrado</title>
   <style>body{font-family:-apple-system,sans-serif;background:#eef2f7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.box{background:white;border-radius:16px;padding:40px 32px;text-align:center;max-width:380px;box-shadow:0 4px 20px rgba(0,0,0,.1)}.icon{font-size:3rem;margin-bottom:16px}h1{color:#37474f;font-size:1.3rem;margin-bottom:8px}p{color:#78909c;font-size:.9rem;line-height:1.6}</style>
   </head><body><div class="box"><div class="icon">🔍</div><h1>Paciente no encontrado</h1><p>El código NFC escaneado no corresponde a ningún paciente registrado.</p></div></body></html>`;
 }
 
 function renderError() {
-  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PulsTag — Error</title>
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JAZMA ID — Error</title>
   <style>body{font-family:-apple-system,sans-serif;background:#eef2f7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.box{background:white;border-radius:16px;padding:40px 32px;text-align:center;max-width:380px;box-shadow:0 4px 20px rgba(0,0,0,.1)}.icon{font-size:3rem;margin-bottom:16px}h1{color:#c62828;font-size:1.3rem;margin-bottom:8px}p{color:#78909c;font-size:.9rem}</style>
   </head><body><div class="box"><div class="icon">⚠️</div><h1>Error del servidor</h1><p>No se pudo cargar la información. Intente nuevamente.</p></div></body></html>`;
 }

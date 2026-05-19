@@ -130,7 +130,7 @@ async function initDB() {
 initDB()
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`PulsTag corriendo en http://localhost:${PORT}`);
+      console.log(`JAZMA ID corriendo en http://localhost:${PORT}`);
       console.log(`  Panel admin → http://localhost:${PORT}/admin`);
     });
   })
